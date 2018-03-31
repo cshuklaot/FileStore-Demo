@@ -1,4 +1,4 @@
-package com.ot.multipart;
+package com.ot.multipart.upload;
 
 import org.springframework.web.multipart.MultipartFile;
 

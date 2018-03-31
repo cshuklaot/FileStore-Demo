@@ -20,7 +20,6 @@ import org.springframework.web.multipart.MultipartFile;
 public class GreetingController {
 
     private static final String template = "Hello, %s!";
-	private static final String UPLOADED_FOLDER = "";
     private final AtomicLong counter = new AtomicLong();
 
     @RequestMapping("/greeting")
@@ -28,42 +27,5 @@ public class GreetingController {
         return new Greeting(counter.incrementAndGet(),
                             String.format(template, name));
     }
-    @RequestMapping("/upload/store")
-    public String uploadFileMulti(
-            @RequestParam("extraField") String extraField,
-            @RequestParam("files") MultipartFile[] uploadfiles) {
-
-        System.out.println("Multiple file upload!");
-
-        String uploadedFileName = Arrays.stream(uploadfiles).map(x -> x.getOriginalFilename())
-                .filter(x -> !StringUtils.isEmpty(x)).collect(Collectors.joining(" , "));
-
-        if (StringUtils.isEmpty(uploadedFileName)) {
-            return "please select a file!";
-        }
-
-        try {
-        	saveUploadedFiles(Arrays.asList(uploadfiles));
-        } catch (IOException e) {
-            throw new RuntimeException();
-        }
-
-        return "Successfully uploaded - "
-                + uploadedFileName;
-
-    }
-    private void saveUploadedFiles(List<MultipartFile> files) throws IOException {
-
-        for (MultipartFile file : files) {
-            if (file.isEmpty()) {
-                continue; //next pls
-            }
-            byte[] bytes = file.getBytes();
-            Path path = Paths.get(UPLOADED_FOLDER + file.getOriginalFilename());
-            Files.write(path, bytes);
-            System.out.println(path.toFile().getAbsolutePath()); 
-
-        }
-
-    }
+    
 }
