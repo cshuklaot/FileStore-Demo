@@ -58,13 +58,14 @@ public class ProcessSchema {
 	public InputDataModel processComplexType(XmlSchemaElement element) {
 		InputDataModel model = new InputDataModel();
 		model.name = element.getName();
-		model.isReapeating = isArray(element);
+
 		QName qName = element.getSchemaTypeName();
 		model.type = qName != null ? qName.getLocalPart() : null;
 		XmlSchemaSequence schemaSequence;
 		XmlSchemaParticle particle = ((XmlSchemaComplexType) element.getSchemaType()).getParticle();
 		if (particle instanceof XmlSchemaSequence) {
 			schemaSequence = (XmlSchemaSequence) particle;
+			model.isReapeating = isArray(element) || schemaSequence.getMaxOccurs() > 1;
 			List<XmlSchemaSequenceMember> schemaObjectCollection = schemaSequence.getItems();
 			for (XmlSchemaSequenceMember sq : schemaObjectCollection) {
 				XmlSchemaElement innerElement = ((XmlSchemaElement) sq);

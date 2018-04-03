@@ -1,5 +1,7 @@
 package com.ot.controllers;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
@@ -36,11 +38,11 @@ public class SchemaParse {
 		return true;
 	}
 
-	/*
-	 * public static void main(String[] args) throws FileNotFoundException {
-	 * FileInputStream stream = new FileInputStream("pdi-schema.xsd");
-	 * XmlSchemaCollection schemaCol = new XmlSchemaCollection();
-	 * 
-	 * XmlSchema schema = schemaCol.read(new StreamSource(stream)); new
-	 * ProcessSchema(schema).processXmlSchema(); }
-	 */}
+	public static void main(String[] args) throws FileNotFoundException {
+		FileInputStream stream = new FileInputStream("pdi-schema.xsd");
+		XmlSchemaCollection schemaCol = new XmlSchemaCollection();
+
+		XmlSchema schema = schemaCol.read(new StreamSource(stream));
+		new ProcessSchema(schema).processXmlSchema();
+	}
+}
