@@ -4,7 +4,6 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.List;
 
 import javax.xml.transform.stream.StreamSource;
 
@@ -15,15 +14,15 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.emc.schema.InputDataModel;
 import com.emc.schema.ProcessSchema;
+import com.emc.schema.ReturnSchemaModel;
 
 @RestController
 @RequestMapping("/parse")
 public class SchemaParse {
 
 	@RequestMapping("/schema")
-	public List<InputDataModel> schemaParse(@RequestParam("schema") MultipartFile multipart) throws IOException {
+	public ReturnSchemaModel schemaParse(@RequestParam("schema") MultipartFile multipart) throws IOException {
 		if (validRequest(multipart)) {
 			InputStream is = multipart.getInputStream();
 			XmlSchemaCollection schemaCol = new XmlSchemaCollection();

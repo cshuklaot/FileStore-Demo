@@ -30,12 +30,14 @@ import org.apache.ws.commons.schema.XmlSchemaType;
 public class ProcessSchema {
 
 	XmlSchema xmlSchema;
+	private ReturnSchemaModel returnObject;
 
 	public ProcessSchema(XmlSchema xmlSchema) {
 		this.xmlSchema = xmlSchema;
+		returnObject = new ReturnSchemaModel();
 	}
 
-	public List<InputDataModel> processXmlSchema() {
+	public ReturnSchemaModel processXmlSchema() {
 		List<InputDataModel> inputModel = new ArrayList<>();
 		Map<QName, XmlSchemaElement> elements = this.xmlSchema.getElements();
 		Iterator<XmlSchemaElement> xmlSchemaElementIterator = elements.values().iterator();
@@ -51,8 +53,8 @@ public class ProcessSchema {
 			}
 			inputModel.add(model);
 		}
-		System.out.println();
-		return inputModel;
+		returnObject.schemaModel = inputModel;
+		return returnObject;
 	}
 
 	public InputDataModel processComplexType(XmlSchemaElement element) {
@@ -105,7 +107,7 @@ public class ProcessSchema {
 		} else {
 			model.type = qName.getLocalPart();
 		}
-
+		returnObject.simpleModels.add(model);
 		return model;
 
 	}
