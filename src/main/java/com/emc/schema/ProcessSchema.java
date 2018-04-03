@@ -1,5 +1,6 @@
 package com.emc.schema;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -9,16 +10,22 @@ import javax.xml.namespace.QName;
 import org.apache.ws.commons.schema.XmlSchema;
 import org.apache.ws.commons.schema.XmlSchemaComplexType;
 import org.apache.ws.commons.schema.XmlSchemaElement;
+import org.apache.ws.commons.schema.XmlSchemaFacet;
+import org.apache.ws.commons.schema.XmlSchemaMaxInclusiveFacet;
+import org.apache.ws.commons.schema.XmlSchemaMaxLengthFacet;
+import org.apache.ws.commons.schema.XmlSchemaMinInclusiveFacet;
 import org.apache.ws.commons.schema.XmlSchemaParticle;
 import org.apache.ws.commons.schema.XmlSchemaSequence;
 import org.apache.ws.commons.schema.XmlSchemaSequenceMember;
 import org.apache.ws.commons.schema.XmlSchemaSimpleType;
+import org.apache.ws.commons.schema.XmlSchemaSimpleTypeContent;
+import org.apache.ws.commons.schema.XmlSchemaSimpleTypeRestriction;
 import org.apache.ws.commons.schema.XmlSchemaType;
 
 /**
- * @Author: Shameera
+ * @Author: Chandresh
  *
- *          This is an example for how to iterate XmlSchema
+ *          class to walk through schema file and generate JSON object.
  */
 public class ProcessSchema {
 
@@ -28,57 +35,78 @@ public class ProcessSchema {
 		this.xmlSchema = xmlSchema;
 	}
 
-	public void processXmlSchema() {
+	public List<InputDataModel> processXmlSchema() {
+		List<InputDataModel> inputModel = new ArrayList<>();
 		Map<QName, XmlSchemaElement> elements = this.xmlSchema.getElements();
 		Iterator<XmlSchemaElement> xmlSchemaElementIterator = elements.values().iterator();
 		while (xmlSchemaElementIterator.hasNext()) {
 			XmlSchemaElement element = xmlSchemaElementIterator.next();
 			XmlSchemaType schemaType = element.getSchemaType();
+			InputDataModel model = null;
 			if (schemaType instanceof XmlSchemaComplexType) {
-				processComplexType(element);
+				model = processComplexType(element);
+
 			} else if (schemaType instanceof XmlSchemaSimpleType) {
-				processSimpleType(element);
+				model = processSimpleType(element);
 			}
+			inputModel.add(model);
 		}
+		System.out.println();
+		return inputModel;
 	}
 
-	public void processComplexType(XmlSchemaElement xmlSchemaElement) {
-		String name = xmlSchemaElement.getName();
-		QName qName = xmlSchemaElement.getSchemaTypeName();
-		String localPart = "";
-		if (qName != null) {
-			localPart = qName.getLocalPart();
-		}
-		if (isArray(xmlSchemaElement)) {
-			System.out.println(name + " ---> compelx " + localPart + " type ARRAY");
-		} else {
-			System.out.println(name + " ---> compelx " + localPart + " type ARRAY");
-		}
+	public InputDataModel processComplexType(XmlSchemaElement element) {
+		InputDataModel model = new InputDataModel();
+		model.name = element.getName();
+		model.isReapeating = isArray(element);
+		QName qName = element.getSchemaTypeName();
+		model.type = qName != null ? qName.getLocalPart() : null;
 		XmlSchemaSequence schemaSequence;
-		XmlSchemaParticle particle = ((XmlSchemaComplexType) xmlSchemaElement.getSchemaType()).getParticle();
+		XmlSchemaParticle particle = ((XmlSchemaComplexType) element.getSchemaType()).getParticle();
 		if (particle instanceof XmlSchemaSequence) {
 			schemaSequence = (XmlSchemaSequence) particle;
 			List<XmlSchemaSequenceMember> schemaObjectCollection = schemaSequence.getItems();
-			for (XmlSchemaSequenceMember element : schemaObjectCollection) {
-				XmlSchemaElement innerElement = ((XmlSchemaElement) element);
+			for (XmlSchemaSequenceMember sq : schemaObjectCollection) {
+				XmlSchemaElement innerElement = ((XmlSchemaElement) sq);
 				XmlSchemaType innerEleType = innerElement.getSchemaType();
 				if (innerEleType instanceof XmlSchemaComplexType) {
-					processComplexType(innerElement);
+					model.models.add(processComplexType(innerElement));
 				} else if (innerEleType instanceof XmlSchemaSimpleType) {
-					processSimpleType(innerElement);
+					model.models.add(processSimpleType(innerElement));
 				}
 
 			}
 		}
+		return model;
 	}
 
-	public void processSimpleType(XmlSchemaElement element) {
-		QName qName = element.getSchemaTypeName();
-		if (isArray(element)) {
-			System.out.println(element.getName() + "  ----> simple " + qName.getLocalPart() + " type ARRAY");
+	public InputDataModel processSimpleType(XmlSchemaElement element) {
+		InputDataModel model = new InputDataModel();
+		model.name = element.getName();
+		model.isReapeating = isArray(element);
+
+		XmlSchemaSimpleType elementType = (XmlSchemaSimpleType) element.getSchemaType();
+		XmlSchemaSimpleTypeContent content = elementType.getContent();
+		if (content instanceof XmlSchemaSimpleTypeRestriction) {
+			XmlSchemaSimpleTypeRestriction resC = (XmlSchemaSimpleTypeRestriction) content;
+			List<XmlSchemaFacet> e = resC.getFacets();
+			for (XmlSchemaFacet facet : e) {
+				if (facet instanceof XmlSchemaMinInclusiveFacet) {
+					model.minvalue = Integer.parseInt((String) facet.getValue());
+				} else if (facet instanceof XmlSchemaMaxLengthFacet) {
+					model.maxLength = Integer.parseInt((String) facet.getValue());
+				} else if (facet instanceof XmlSchemaMaxInclusiveFacet) {
+					model.maxvalue = Integer.parseInt((String) facet.getValue());
+				}
+			}
+			model.type = resC.getBaseTypeName().getLocalPart();
 		} else {
-			System.out.println(element.getName() + "  ----> simple " + qName.getLocalPart() + " type");
+			QName qName = element.getSchemaTypeName();
+			model.type = qName.getLocalPart();
 		}
+
+		return model;
+
 	}
 
 	private boolean isArray(XmlSchemaElement element) {
