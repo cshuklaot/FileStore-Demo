@@ -85,10 +85,11 @@ public class ProcessSchema {
 		InputDataModel model = new InputDataModel();
 		model.name = element.getName();
 		model.isReapeating = isArray(element);
+		QName qName = element.getSchemaTypeName();
 
 		XmlSchemaSimpleType elementType = (XmlSchemaSimpleType) element.getSchemaType();
 		XmlSchemaSimpleTypeContent content = elementType.getContent();
-		if (content instanceof XmlSchemaSimpleTypeRestriction) {
+		if (content instanceof XmlSchemaSimpleTypeRestriction && qName == null) {
 			XmlSchemaSimpleTypeRestriction resC = (XmlSchemaSimpleTypeRestriction) content;
 			List<XmlSchemaFacet> e = resC.getFacets();
 			for (XmlSchemaFacet facet : e) {
@@ -102,7 +103,6 @@ public class ProcessSchema {
 			}
 			model.type = resC.getBaseTypeName().getLocalPart();
 		} else {
-			QName qName = element.getSchemaTypeName();
 			model.type = qName.getLocalPart();
 		}
 
