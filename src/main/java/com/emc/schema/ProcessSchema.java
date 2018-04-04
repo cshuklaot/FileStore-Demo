@@ -14,12 +14,14 @@ import org.apache.ws.commons.schema.XmlSchemaFacet;
 import org.apache.ws.commons.schema.XmlSchemaMaxInclusiveFacet;
 import org.apache.ws.commons.schema.XmlSchemaMaxLengthFacet;
 import org.apache.ws.commons.schema.XmlSchemaMinInclusiveFacet;
+import org.apache.ws.commons.schema.XmlSchemaMinLengthFacet;
 import org.apache.ws.commons.schema.XmlSchemaParticle;
 import org.apache.ws.commons.schema.XmlSchemaSequence;
 import org.apache.ws.commons.schema.XmlSchemaSequenceMember;
 import org.apache.ws.commons.schema.XmlSchemaSimpleType;
 import org.apache.ws.commons.schema.XmlSchemaSimpleTypeContent;
 import org.apache.ws.commons.schema.XmlSchemaSimpleTypeRestriction;
+import org.apache.ws.commons.schema.XmlSchemaTotalDigitsFacet;
 import org.apache.ws.commons.schema.XmlSchemaType;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -103,11 +105,18 @@ public class ProcessSchema {
 			for (XmlSchemaFacet facet : e) {
 				if (facet instanceof XmlSchemaMinInclusiveFacet) {
 					model.minvalue = Integer.parseInt((String) facet.getValue());
+				}
+				if (facet instanceof XmlSchemaMinLengthFacet) {
+					model.minLength = Integer.parseInt((String) facet.getValue());
 				} else if (facet instanceof XmlSchemaMaxLengthFacet) {
 					model.maxLength = Integer.parseInt((String) facet.getValue());
 				} else if (facet instanceof XmlSchemaMaxInclusiveFacet) {
 					model.maxvalue = Integer.parseInt((String) facet.getValue());
+				} else if (facet instanceof XmlSchemaTotalDigitsFacet) {
+					model.minLength = Integer.parseInt((String) facet.getValue());
+					model.maxLength = Integer.parseInt((String) facet.getValue());
 				}
+
 			}
 			type = resC.getBaseTypeName().getLocalPart();
 		} else {
@@ -124,7 +133,7 @@ public class ProcessSchema {
 		case "positiveInteger":
 		case "integer":
 		case "long":
-			return "integer";
+			return "number";
 		case "date":
 			return "date";
 		case "dateTime":
