@@ -22,6 +22,9 @@ import org.apache.ws.commons.schema.XmlSchemaSimpleTypeContent;
 import org.apache.ws.commons.schema.XmlSchemaSimpleTypeRestriction;
 import org.apache.ws.commons.schema.XmlSchemaType;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 /**
  * @Author: Chandresh
  *
@@ -37,7 +40,7 @@ public class ProcessSchema {
 		returnObject = new ReturnSchemaModel();
 	}
 
-	public ReturnSchemaModel processXmlSchema() {
+	public ReturnSchemaModel processXmlSchema() throws JsonProcessingException {
 		List<InputDataModel> inputModel = new ArrayList<>();
 		Map<QName, XmlSchemaElement> elements = this.xmlSchema.getElements();
 		Iterator<XmlSchemaElement> xmlSchemaElementIterator = elements.values().iterator();
@@ -54,6 +57,8 @@ public class ProcessSchema {
 			inputModel.add(model);
 		}
 		returnObject.schemaModel = inputModel;
+		ObjectMapper mapper = new ObjectMapper();
+		System.out.println(mapper.writerWithDefaultPrettyPrinter().writeValueAsString(returnObject));
 		return returnObject;
 	}
 
@@ -91,6 +96,7 @@ public class ProcessSchema {
 
 		XmlSchemaSimpleType elementType = (XmlSchemaSimpleType) element.getSchemaType();
 		XmlSchemaSimpleTypeContent content = elementType.getContent();
+		String type;
 		if (content instanceof XmlSchemaSimpleTypeRestriction && qName == null) {
 			XmlSchemaSimpleTypeRestriction resC = (XmlSchemaSimpleTypeRestriction) content;
 			List<XmlSchemaFacet> e = resC.getFacets();
@@ -103,13 +109,32 @@ public class ProcessSchema {
 					model.maxvalue = Integer.parseInt((String) facet.getValue());
 				}
 			}
-			model.type = resC.getBaseTypeName().getLocalPart();
+			type = resC.getBaseTypeName().getLocalPart();
 		} else {
-			model.type = qName.getLocalPart();
+			type = qName.getLocalPart();
 		}
+		model.type = getType(type);
 		returnObject.simpleModels.add(model);
 		return model;
 
+	}
+
+	private String getType(String type) {
+		switch (type) {
+		case "positiveInteger":
+		case "integer":
+		case "long":
+			return "integer";
+		case "date":
+			return "date";
+		case "dateTime":
+			return "datetime-local";
+		case "boolean":
+			return "checkbox";
+
+		default:
+			return "text";
+		}
 	}
 
 	private boolean isArray(XmlSchemaElement element) {

@@ -16,6 +16,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.emc.schema.ProcessSchema;
 import com.emc.schema.ReturnSchemaModel;
+import com.fasterxml.jackson.core.JsonProcessingException;
 
 @RestController
 @RequestMapping("/parse")
@@ -38,7 +39,7 @@ public class SchemaParse {
 		return true;
 	}
 
-	public static void main(String[] args) throws FileNotFoundException {
+	public static void main(String[] args) throws FileNotFoundException, JsonProcessingException {
 		FileInputStream stream = new FileInputStream("pdi-schema.xsd");
 		XmlSchemaCollection schemaCol = new XmlSchemaCollection();
 
