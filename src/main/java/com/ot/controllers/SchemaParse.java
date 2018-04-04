@@ -23,6 +23,7 @@ public class SchemaParse {
 
 	@RequestMapping("/schema")
 	public ReturnSchemaModel schemaParse(@RequestParam("schema") MultipartFile multipart) throws IOException {
+		System.out.println("SchemaParse.schemaParse()");
 		if (validRequest(multipart)) {
 			InputStream is = multipart.getInputStream();
 			XmlSchemaCollection schemaCol = new XmlSchemaCollection();

@@ -2,35 +2,33 @@ package com.ot.multipart.upload;
 
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.Arrays;
+import net.minidev.json.JSONObject;
 
 public class UploadModel {
 
-    private String extraField;
+	private JSONObject formInfo;
 
-    private MultipartFile[] files;
+	public UploadModel() {
+		super();
+		// TODO Auto-generated constructor stub
+	}
 
-    public String getExtraField() {
-        return extraField;
-    }
+	private MultipartFile[] files;
 
-    public void setExtraField(String extraField) {
-        this.extraField = extraField;
-    }
+	public MultipartFile[] getFiles() {
+		return files;
+	}
 
-    public MultipartFile[] getFiles() {
-        return files;
-    }
+	public void setFiles(MultipartFile[] files) {
+		this.files = files;
+	}
 
-    public void setFiles(MultipartFile[] files) {
-        this.files = files;
-    }
+	public JSONObject getFormInfo() {
+		return formInfo;
+	}
 
-    @Override
-    public String toString() {
-        return "UploadModel{" +
-                "extraField='" + extraField + '\'' +
-                ", files=" + Arrays.toString(files) +
-                '}';
-    }
+	public void setFormInfo(JSONObject formInfo) {
+		this.formInfo = formInfo;
+	}
+
 }
