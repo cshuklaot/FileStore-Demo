@@ -60,7 +60,7 @@ public class ProcessSchema {
 		}
 		returnObject.schemaModel = inputModel;
 		ObjectMapper mapper = new ObjectMapper();
-		System.out.println(mapper.writerWithDefaultPrettyPrinter().writeValueAsString(returnObject));
+		// System.out.println(mapper.writerWithDefaultPrettyPrinter().writeValueAsString(returnObject));
 		return returnObject;
 	}
 
@@ -78,11 +78,15 @@ public class ProcessSchema {
 			List<XmlSchemaSequenceMember> schemaObjectCollection = schemaSequence.getItems();
 			for (XmlSchemaSequenceMember sq : schemaObjectCollection) {
 				XmlSchemaElement innerElement = ((XmlSchemaElement) sq);
-				XmlSchemaType innerEleType = innerElement.getSchemaType();
-				if (innerEleType instanceof XmlSchemaComplexType) {
-					model.models.add(processComplexType(innerElement));
-				} else if (innerEleType instanceof XmlSchemaSimpleType) {
-					model.models.add(processSimpleType(innerElement));
+				if (!innerElement.getName().equals("Attachments")) {
+					XmlSchemaType innerEleType = innerElement.getSchemaType();
+					if (innerEleType instanceof XmlSchemaComplexType) {
+						model.models.add(processComplexType(innerElement));
+					} else if (innerEleType instanceof XmlSchemaSimpleType) {
+						model.models.add(processSimpleType(innerElement));
+					}
+				} else {
+					System.out.println("skipping attachments");
 				}
 
 			}
