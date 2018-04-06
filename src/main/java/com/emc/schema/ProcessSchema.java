@@ -78,7 +78,7 @@ public class ProcessSchema {
 			List<XmlSchemaSequenceMember> schemaObjectCollection = schemaSequence.getItems();
 			for (XmlSchemaSequenceMember sq : schemaObjectCollection) {
 				XmlSchemaElement innerElement = ((XmlSchemaElement) sq);
-				if (!innerElement.getName().equals("Attachments")) {
+				if (!isElementAttachment(innerElement)) {
 					XmlSchemaType innerEleType = innerElement.getSchemaType();
 					if (innerEleType instanceof XmlSchemaComplexType) {
 						model.models.add(processComplexType(innerElement));
@@ -92,6 +92,10 @@ public class ProcessSchema {
 			}
 		}
 		return model;
+	}
+
+	private boolean isElementAttachment(XmlSchemaElement innerElement) {
+		return innerElement != null && innerElement.getName().equals("Attachments");
 	}
 
 	public InputDataModel processSimpleType(XmlSchemaElement element) {

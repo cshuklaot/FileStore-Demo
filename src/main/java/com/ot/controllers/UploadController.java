@@ -7,7 +7,6 @@ import java.io.IOException;
 import java.io.Writer;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -20,6 +19,7 @@ import java.util.Map;
 
 import javax.xml.bind.DatatypeConverter;
 
+import org.apache.commons.io.FilenameUtils;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -38,21 +38,18 @@ import com.ot.controllers.utils.CSVUtils;
 @RestController
 @RequestMapping("/upload")
 public class UploadController {
-	private static final File UPLOADED_FOLDER = new File("C:\\InfoArchiveUploadedStuff");
+	private static final File UPLOAD_FOLDER_CSV = new File("C:\\InfoArchiveUploadedStuff");
 	private File file;
+	private MultipartFile uploadfile;
+	private static final File UPLOADED_FOLDER_FILE = new File(UPLOAD_FOLDER_CSV, "files");
 
 	@RequestMapping("/store")
 	public ResponseEntity<InputStreamResource> uploadFileMulti(@RequestParam("formInfo") String formInfo,
 			@RequestParam("InputModel") String inputmodel, @RequestParam("files") MultipartFile uploadfile)
 			throws JsonParseException, JsonMappingException, IOException {
 
-		try {
-			saveUploadedFile(uploadfile);
-		} catch (IOException e) {
-			throw new RuntimeException();
-		}
-
-		// System.out.println("UploadController.uploadFileMulti()");
+		saveUploadedFile(uploadfile);
+		this.uploadfile = uploadfile;
 		File csvFile = extractCSV(formInfo, inputmodel);
 		String uploadedFileName = uploadfile.getOriginalFilename();
 		if (StringUtils.isEmpty(uploadedFileName)) {
@@ -99,7 +96,7 @@ public class UploadController {
 		String formattedDate = formatter.format(cal);
 		String fileName = formattedDate + "_" + application + "_" + holding + ".csv";
 
-		File csvFile = new File(UPLOADED_FOLDER, fileName);
+		File csvFile = new File(UPLOAD_FOLDER_CSV, fileName);
 		synchronized (csvFile) {
 			boolean b = !csvFile.exists();
 			FileWriter writer = new FileWriter(csvFile, true);
@@ -123,6 +120,7 @@ public class UploadController {
 			values.add(smodel.name);
 		});
 		values.add("File Name");
+		values.add("AttachmentName");
 		values.add("MimeType");
 		values.add("CreatedBy");
 		values.add("CreatedOnDate");
@@ -148,28 +146,44 @@ public class UploadController {
 				} catch (ParseException e) {
 					throw new RuntimeException();
 				}
-				System.out.println(value);
-
 				value = fromDateToXmlDateTime(fromXmltoDate);
-				System.out.println(value);
 
 			}
 			values.add(value);
 		});
 		values.add(this.file.getName());
+		values.add(this.uploadfile.getOriginalFilename());
 		String mimetype = Files.probeContentType(file.toPath());
 		values.add(mimetype);
 		values.add("");
 		values.add(fromDateToXmlDateTime(new Date()));
-
 		CSVUtils.writeLine(writer, values);
 	}
 
-	private void saveUploadedFile(MultipartFile file) throws IOException {
-		byte[] bytes = file.getBytes();
-		Path path = Paths.get(UPLOADED_FOLDER.getAbsolutePath(), file.getOriginalFilename());
+	private void saveUploadedFile(MultipartFile multiPfile) throws IOException {
+		byte[] bytes = multiPfile.getBytes();
+		this.file = getUniqueFile(multiPfile);
+		Path path = this.file.toPath();
 		Files.write(path, bytes);
-		this.file = path.toFile();
+	}
+
+	private File getUniqueFile(MultipartFile file) {
+		String originalFilename = file.getOriginalFilename();
+		String basename = FilenameUtils.getBaseName(originalFilename);
+		String extn = FilenameUtils.getExtension(originalFilename);
+
+		File tFile = new File(UPLOADED_FOLDER_FILE, originalFilename);
+		if (tFile.exists()) {
+			int i = 1;
+			while (true) {
+				tFile = new File(UPLOADED_FOLDER_FILE, basename + "(" + i + ")." + extn);
+				if (!tFile.exists()) {
+					break;
+				}
+				i++;
+			}
+		}
+		return tFile;
 	}
 
 	private Date fromXmltoDate(String xmlDate) throws ParseException {
