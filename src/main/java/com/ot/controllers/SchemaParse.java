@@ -14,9 +14,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.emc.schema.ProcessSchema;
-import com.emc.schema.ReturnSchemaModel;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.ot.schema.ProcessSchema;
+import com.ot.schema.ReturnSchemaModel;
 
 @RestController
 @RequestMapping("/parse")

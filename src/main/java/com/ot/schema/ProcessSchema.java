@@ -1,4 +1,4 @@
-package com.emc.schema;
+package com.ot.schema;
 
 import java.util.ArrayList;
 import java.util.Iterator;
